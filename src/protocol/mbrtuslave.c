@@ -40,21 +40,18 @@ void initModbusRegisters(void)
  \param [IN] value 2 for validate
  \param [IN] reference value
  */
-static bool validateRequestData(uint16_t var1, uint16_t var2, uint16_t ref)
+static Exception_t ValidateRequest(uint16_t addr, uint16_t num, uint16_t max)
 {
-    if (var1 > (ref - 1)) {
-        ExceptionCode = ILLEGAL_DATA_ADDRESS;
-        return false;
+    if (addr > (max - 1)) {
+        return ILLEGAL_DATA_ADDRESS;
     }
-    if ((var2 == 0) || (var2 > ref)) {
-        ExceptionCode = ILLEGAL_DATA_VALUE;
-        return false;
+    if ((num == 0) || (num > max)) {
+        return ILLEGAL_DATA_VALUE;
     }
-    if ((var1 + var2) > ref) {
-        ExceptionCode = ILLEGAL_DATA_VALUE;
-        return false;
+    if ((addr + num) > max) {
+        return ILLEGAL_DATA_VALUE;
     }
-    return true;
+    return NO_ERROR;
 }
 
 /* Modbus function 0x01 Read Coil Status */
@@ -67,10 +64,8 @@ static uint8_t readCoilStatus(uint8_t *p_data)
     uint16_t n_regs = (p_data[2] << 8) | p_data[3];
 
     // Validate request data
-    if (!validateRequestData(start_addr, n_regs, NUMBER_OF_DOUTS))
-    {
-        return sizeof(uint8_t);
-    }
+    ExceptionCode = ValidateRequest(start_addr, n_regs, NUMBER_OF_DOUTS);
+    if (ExceptionCode != NO_ERROR) return sizeof(uint8_t);
     
     // Read discrete outputs
     for (int i = 0, j = 0; i < n_regs;) {
@@ -98,10 +93,8 @@ static uint8_t readDiscreteInputs(uint8_t *p_data)
     uint16_t n_regs = (p_data[2] << 8) | p_data[3];
 
     // Validate request data
-    if (!validateRequestData(start_addr, n_regs, NUMBER_OF_DINPS))
-    {
-        return sizeof(uint8_t);
-    }
+    ExceptionCode = ValidateRequest(start_addr, n_regs, NUMBER_OF_DINPS);
+    if (ExceptionCode != NO_ERROR) return sizeof(uint8_t);
     
     // Read discrete inputs
         for (int i = 0, j = 0; i < n_regs;) {
@@ -126,10 +119,8 @@ static uint8_t readHoldingRegisters(uint8_t *p_data)
     uint16_t n_regs = (p_data[2] << 8) | p_data[3];
     
     // Validate request data
-    if (!validateRequestData(start_addr, n_regs, NUMBER_OF_HOLDING_REGS))
-    {
-        return sizeof(uint8_t);
-    }
+    ExceptionCode = ValidateRequest(start_addr, n_regs, NUMBER_OF_HOLDING_REGS);
+    if (ExceptionCode != NO_ERROR) return sizeof(uint8_t);
     
     p_data[0] = n_regs * 2; // number of data bytes in response
     n_regs += start_addr;
@@ -150,10 +141,8 @@ static uint8_t readInputRegisters(uint8_t *p_data)
     uint16_t n_regs = (p_data[2] << 8) | p_data[3];
     
     // Validate request data
-    if (!validateRequestData(start_addr, n_regs, NUMBER_OF_INPUT_REGS))
-    {
-        return sizeof(uint8_t);
-    }
+    ExceptionCode = ValidateRequest(start_addr, n_regs, NUMBER_OF_INPUT_REGS);
+    if (ExceptionCode != NO_ERROR) return sizeof(uint8_t);
     
     p_data[0] = n_regs * 2; // number of data bytes in response
     n_regs += start_addr;
@@ -174,10 +163,8 @@ static uint8_t forceSingleCoil(uint8_t *p_data)
     uint16_t reg_value = (p_data[2] << 8) | p_data[3];
     
     // Validate request data
-    if (!validateRequestData(start_addr, 1, NUMBER_OF_DOUTS))
-    {
-        return sizeof(uint8_t);
-    }
+    ExceptionCode = ValidateRequest(start_addr, 1, NUMBER_OF_DOUTS);
+    if (ExceptionCode != NO_ERROR) return sizeof(uint8_t);
     
     // Set register
     if (reg_value == 0) {
@@ -197,10 +184,8 @@ static uint8_t presetSingleRegister(uint8_t *p_data)
     uint16_t reg_value = (p_data[2] << 8) | p_data[3];
     
     // Validate request data
-    if (!validateRequestData(start_addr, 1, NUMBER_OF_HOLDING_REGS))
-    {
-        return sizeof(uint8_t);
-    }
+    ExceptionCode = ValidateRequest(start_addr, 1, NUMBER_OF_HOLDING_REGS);
+    if (ExceptionCode != NO_ERROR) return sizeof(uint8_t);
     
     // Set register
     HoldingRegisters[start_addr] = reg_value;
@@ -216,10 +201,8 @@ static uint8_t forceMultipleCoils(uint8_t *p_data)
     uint8_t  n_bytes = p_data[4];
     
     // Validate request data
-    if (!validateRequestData(start_addr, n_regs, NUMBER_OF_DOUTS))
-    {
-        return sizeof(uint8_t);
-    }
+    ExceptionCode = ValidateRequest(start_addr, n_regs, NUMBER_OF_DOUTS);
+    if (ExceptionCode != NO_ERROR) return sizeof(uint8_t);
     
     // Set registers
     for (int i = 0; i < n_bytes; i++) {
@@ -246,10 +229,8 @@ static uint8_t presetMultipleRegisters(uint8_t *p_data)
     uint16_t n_regs = (p_data[2] << 8) | p_data[3];
     
     // Validate request data
-    if (!validateRequestData(start_addr, n_regs, NUMBER_OF_HOLDING_REGS))
-    {
-        return sizeof(uint8_t);
-    }
+    ExceptionCode = ValidateRequest(start_addr, n_regs, NUMBER_OF_HOLDING_REGS);
+    if (ExceptionCode != NO_ERROR) return sizeof(uint8_t);
     
     // Set registers
     for(int i = 0; i < n_regs; i++) {

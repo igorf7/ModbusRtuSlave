@@ -14,7 +14,7 @@
 #define HIGH                        0xFF
 #define LOW                         0x00
 
-/* Error Codes */
+/* Mobbus RTU Exception Codes */
 typedef enum {
     NO_ERROR = 0,
     ILLEGAL_FUNCTION,
@@ -25,7 +25,7 @@ typedef enum {
     SLAVE_DEVICE_BUSY,
     NEGATIVE_ACKNOWLEDGE,
     MEMORY_PARITY_ERROR
-} RtuErrorCode_t;
+} Exception_t;
 
 /* Mobbus RTU frame stucture */
 #pragma pack(push, 1)

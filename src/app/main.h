@@ -12,7 +12,7 @@ typedef struct {
     RtuFrame_t *rtu_frame;
 } AppBuffer_t;
 
-/*** Application API ***/
+/*** Main API ***/
 void backgroundTask(void);
 void onUartError(uint16_t err);
 void onUartRxBuff(uint8_t *uart_buff, uint32_t len);
